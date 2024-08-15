@@ -72,6 +72,11 @@ NSString * const kCTMediatorParamsKeySwiftTargetModuleName = @"kCTMediatorParams
     return result;
 }
 
+- (id)performTarget:(NSString *)targetName action:(NSString *)actionName shouldCacheTarget:(BOOL)shouldCacheTarget
+{
+    [self performTarget:targetName action:targetName params:@{} shouldCacheTarget:shouldCacheTarget];
+}
+
 - (id)performTarget:(NSString *)targetName action:(NSString *)actionName params:(NSDictionary *)params shouldCacheTarget:(BOOL)shouldCacheTarget
 {
     if (targetName == nil || actionName == nil) {
@@ -83,9 +88,9 @@ NSString * const kCTMediatorParamsKeySwiftTargetModuleName = @"kCTMediatorParams
     // generate target
     NSString *targetClassString = nil;
     if (swiftModuleName.length > 0) {
-        targetClassString = [NSString stringWithFormat:@"%@.Target_%@", swiftModuleName, targetName];
+        targetClassString = [NSString stringWithFormat:@"%@.%@", swiftModuleName, targetName];
     } else {
-        targetClassString = [NSString stringWithFormat:@"Target_%@", targetName];
+        targetClassString = [NSString stringWithFormat:@"%@", targetName];
     }
     NSObject *target = [self safeFetchCachedTarget:targetClassString];
     if (target == nil) {
@@ -94,7 +99,7 @@ NSString * const kCTMediatorParamsKeySwiftTargetModuleName = @"kCTMediatorParams
     }
 
     // generate action
-    NSString *actionString = [NSString stringWithFormat:@"Action_%@:", actionName];
+    NSString *actionString = [NSString stringWithFormat:@"%@", actionName];
     SEL action = NSSelectorFromString(actionString);
     
     if (target == nil) {
@@ -128,7 +133,7 @@ NSString * const kCTMediatorParamsKeySwiftTargetModuleName = @"kCTMediatorParams
 - (void)releaseCachedTargetWithFullTargetName:(NSString *)fullTargetName
 {
     /*
-     fullTargetName在oc环境下，就是Target_XXXX。要带上Target_前缀。在swift环境下，就是XXXModule.Target_YYY。不光要带上Target_前缀，还要带上模块名。
+     fullTargetName在oc环境下，就是XXXX。要带上前缀。在swift环境下，就是XXXModule.YYY。不光要带上前缀，还要带上模块名。
      */
     if (fullTargetName == nil) {
         return;
@@ -140,9 +145,9 @@ NSString * const kCTMediatorParamsKeySwiftTargetModuleName = @"kCTMediatorParams
 
 - (BOOL)check:(NSString * _Nullable)targetName moduleName:(NSString * _Nullable)moduleName{
     if (moduleName.length > 0) {
-        return NSClassFromString([NSString stringWithFormat:@"%@.Target_%@", moduleName, targetName]) != nil;
+        return NSClassFromString([NSString stringWithFormat:@"%@.%@", moduleName, targetName]) != nil;
     } else {
-        return NSClassFromString([NSString stringWithFormat:@"Target_%@", targetName]) != nil;
+        return NSClassFromString([NSString stringWithFormat:@"%@", targetName]) != nil;
     }
 }
 
